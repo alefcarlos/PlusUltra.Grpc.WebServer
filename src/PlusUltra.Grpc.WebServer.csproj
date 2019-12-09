@@ -23,6 +23,7 @@
     </PackageReference>
     <PackageReference Include="Flunt" Version="1.0.4" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.25.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.25.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.25.0" />
   </ItemGroup>
 

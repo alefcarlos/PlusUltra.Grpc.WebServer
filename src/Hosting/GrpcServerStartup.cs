@@ -1,4 +1,5 @@
 using Grpc.HealthCheck;
+using Grpc.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -26,6 +27,7 @@ namespace PlusUltra.Grpc.WebServer.Hosting
             services.AddHealthChecks();
             services.AddSingleton<HealthServiceImpl>();
             services.AddHostedService<StatusService>();
+            services.AddGrpcReflection();
 
             AfterConfigureServices(services);
         }
@@ -46,6 +48,8 @@ namespace PlusUltra.Grpc.WebServer.Hosting
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<HealthServiceImpl>();
+                endpoints.MapGrpcReflectionService();
+
                 MapEndpoints(endpoints);
             });
 

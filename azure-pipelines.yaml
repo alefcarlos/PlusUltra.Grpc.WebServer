@@ -15,6 +15,7 @@ trigger:
   paths:
     exclude:
     - README.md
+    - examples/*
 
 jobs:
 - job: Build
