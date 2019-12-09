@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Alef Carlos</Authors>
+    <Company>PlusUltra</Company>
+    <PackageTags>Library with various grpc standards</PackageTags>
+    <PackageProjectUrl>https://github.com/alefcarlos/PlusUltra.Grpc.WebServer</PackageProjectUrl>
+    <Description>Grpc Standards</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitVersionTask" Version="5.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Flunt" Version="1.0.4" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.25.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.25.0" />
+  </ItemGroup>
+
+</Project>
