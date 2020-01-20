@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PlusUltra.Grpc.WebServer.Hosting;
+using PlusUltra.GrpcWebServer.Hosting;
 
 namespace GrpcSample
 {

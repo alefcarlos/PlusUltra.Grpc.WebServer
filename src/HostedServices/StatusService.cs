@@ -6,7 +6,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Threading;
 
-namespace PlusUltra.Grpc.WebServer.HostedServices
+namespace PlusUltra.GrpcWebServer.HostedServices
 {
     public class StatusService : BackgroundService
     {

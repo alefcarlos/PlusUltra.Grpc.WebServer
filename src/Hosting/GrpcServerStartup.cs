@@ -1,14 +1,14 @@
 using Grpc.HealthCheck;
-using Grpc.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PlusUltra.Grpc.WebServer.HostedServices;
+using PlusUltra.GrpcWebServer.HostedServices;
+using PlusUltra.GrpcWebServer.Interpectors.Observability;
 
-namespace PlusUltra.Grpc.WebServer.Hosting
+namespace PlusUltra.GrpcWebServer.Hosting
 {
     public abstract class GrpcServerStartup
     {
@@ -23,7 +23,10 @@ namespace PlusUltra.Grpc.WebServer.Hosting
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddGrpc();
+            services.AddGrpc(options =>
+            {
+                options.Interceptors.Add<ServerMetricsInterceptor>();
+            });
             services.AddHealthChecks();
             services.AddSingleton<HealthServiceImpl>();
             services.AddHostedService<StatusService>();
