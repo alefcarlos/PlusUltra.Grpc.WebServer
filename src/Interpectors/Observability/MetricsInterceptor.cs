@@ -12,12 +12,10 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
     /// <summary>
     /// Interceptor for intercepting calls on server side 
     /// </summary>
-    public class ServerMetricsInterceptor : Interceptor, IDisposable
+    public class ServerMetricsInterceptor : Interceptor
     {
-        private readonly MetricServer _metricServer;
-
         private readonly MetricsBase _metrics;
-        private readonly IDisposable diagnosticSourceRegistration; 
+        
 
         /// <summary>
         /// Enable recording of latency for responses. By default it's set to false
@@ -34,11 +32,6 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
         /// <param name="port">Port for Prometheus server</param>
         public ServerMetricsInterceptor()
         {
-            _metricServer = new MetricServer(port: 1010);
-            _metricServer.Start();
-
-            diagnosticSourceRegistration = DiagnosticSourceAdapter.StartListening();
-
             _metrics = new ServerMetrics();
             EnableLatencyMetrics = false;
         }
@@ -179,12 +172,6 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
             }
 
             return result;
-        }
-
-        public void Dispose()
-        {
-            // _metricServer.Stop();
-            // diagnosticSourceRegistration.Dispose();
         }
     }
 }

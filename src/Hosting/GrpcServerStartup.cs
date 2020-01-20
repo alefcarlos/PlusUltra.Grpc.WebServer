@@ -29,9 +29,11 @@ namespace PlusUltra.GrpcWebServer.Hosting
             });
             services.AddHealthChecks();
             services.AddSingleton<HealthServiceImpl>();
-            services.AddHostedService<StatusService>();
             services.AddGrpcReflection();
 
+            services.AddHostedService<StatusService>();
+            services.AddHostedService<MetricsServerService>();
+            
             AfterConfigureServices(services);
         }
 
