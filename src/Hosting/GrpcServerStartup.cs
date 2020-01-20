@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlusUltra.GrpcWebServer.HostedServices;
 using PlusUltra.GrpcWebServer.Interpectors.Observability;
+using PlusUltra.GrpcWebServer.StandaloneMetricsServer;
 
 namespace PlusUltra.GrpcWebServer.Hosting
 {
@@ -23,6 +24,11 @@ namespace PlusUltra.GrpcWebServer.Hosting
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+             services.AddStandaloneMetricsServer(options => {
+                 options.ListenAnyIP(1010);
+                 options.AllowSynchronousIO = true;
+             });
+
             services.AddGrpc(options =>
             {
                 options.Interceptors.Add<ServerMetricsInterceptor>();
@@ -32,7 +38,6 @@ namespace PlusUltra.GrpcWebServer.Hosting
             services.AddGrpcReflection();
 
             services.AddHostedService<StatusService>();
-            services.AddHostedService<MetricsServerService>();
             
             AfterConfigureServices(services);
         }
