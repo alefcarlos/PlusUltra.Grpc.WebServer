@@ -70,7 +70,13 @@ namespace PlusUltra.GrpcWebServer.StandaloneMetricsServer
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await _host?.StopAsync(cancellationToken);
+            if (_host == null)
+                await Task.CompletedTask;
+
+            using (_host)
+            {
+                await _host.StopAsync(cancellationToken);
+            }
         }
     }
 }

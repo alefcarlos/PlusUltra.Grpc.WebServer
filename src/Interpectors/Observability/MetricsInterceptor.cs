@@ -1,11 +1,9 @@
-using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using PlusUltra.GrpcWebServer.Interpectors.Observability.Helpers;
 using PlusUltra.GrpcWebServer.Interpectors.Observability.Models;
-using Prometheus;
 
 namespace PlusUltra.GrpcWebServer.Interpectors.Observability
 {
@@ -14,27 +12,16 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
     /// </summary>
     public class ServerMetricsInterceptor : Interceptor
     {
-        private readonly MetricsBase _metrics;
-        
-
-        /// <summary>
-        /// Enable recording of latency for responses. By default it's set to false
-        /// </summary>
-        public bool EnableLatencyMetrics
-        {
-            get => _metrics.EnableLatencyMetrics;
-            set => _metrics.EnableLatencyMetrics = value;
-        }
-
         /// <summary>
         /// Constructor for server side interceptor
         /// </summary>
-        /// <param name="port">Port for Prometheus server</param>
-        public ServerMetricsInterceptor()
+        /// <param name="enableLatencyMetrics">Set if latency metrics is enabled</param>
+        public ServerMetricsInterceptor(bool enableLatencyMetrics = false)
         {
-            _metrics = new ServerMetrics();
-            EnableLatencyMetrics = false;
+            this.enableLatencyMetrics = enableLatencyMetrics;
         }
+        private readonly bool enableLatencyMetrics;
+
 
         public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest request,
             ServerCallContext context,
@@ -42,7 +29,7 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
         {
             GrpcMethodInfo method = new GrpcMethodInfo(context.Method, MethodType.Unary);
 
-            _metrics.RequestCounterInc(method);
+            MetricsInitializing.Metrics.RequestCounterInc(method);
 
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -50,18 +37,19 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
             try
             {
                 TResponse result = await continuation(request, context);
-                _metrics.ResponseCounterInc(method, context.Status.StatusCode);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, context.Status.StatusCode);
                 return result;
             }
             catch (RpcException e)
             {
-                _metrics.ResponseCounterInc(method, e.Status.StatusCode);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, e.Status.StatusCode);
                 throw;
             }
             finally
             {
                 watch.Stop();
-                _metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
+                if (enableLatencyMetrics)
+                    MetricsInitializing.Metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
             }
         }
 
@@ -71,7 +59,7 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
         {
             GrpcMethodInfo method = new GrpcMethodInfo(context.Method, MethodType.ServerStreaming);
 
-            _metrics.RequestCounterInc(method);
+            MetricsInitializing.Metrics.RequestCounterInc(method);
 
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -82,20 +70,22 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
             {
                 result = continuation(request,
                     new WrapperServerStreamWriter<TResponse>(responseStream,
-                        () => { _metrics.StreamSentCounterInc(method); }),
+                        () => { MetricsInitializing.Metrics.StreamSentCounterInc(method); }),
                     context);
 
-                _metrics.ResponseCounterInc(method, StatusCode.OK);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, StatusCode.OK);
             }
             catch (RpcException e)
             {
-                _metrics.ResponseCounterInc(method, e.Status.StatusCode);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, e.Status.StatusCode);
                 throw;
             }
             finally
             {
                 watch.Stop();
-                _metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
+
+                if (enableLatencyMetrics)
+                    MetricsInitializing.Metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
             }
 
             return result;
@@ -107,7 +97,7 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
         {
             GrpcMethodInfo method = new GrpcMethodInfo(context.Method, MethodType.ClientStreaming);
 
-            _metrics.RequestCounterInc(method);
+            MetricsInitializing.Metrics.RequestCounterInc(method);
 
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -118,19 +108,20 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
             {
                 result = continuation(
                     new WrapperStreamReader<TRequest>(requestStream,
-                        () => { _metrics.StreamReceivedCounterInc(method); }), context);
+                        () => { MetricsInitializing.Metrics.StreamReceivedCounterInc(method); }), context);
 
-                _metrics.ResponseCounterInc(method, StatusCode.OK);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, StatusCode.OK);
             }
             catch (RpcException e)
             {
-                _metrics.ResponseCounterInc(method, e.Status.StatusCode);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, e.Status.StatusCode);
                 throw;
             }
             finally
             {
                 watch.Stop();
-                _metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
+                if (enableLatencyMetrics)
+                    MetricsInitializing.Metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
             }
 
             return result;
@@ -143,7 +134,7 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
         {
             GrpcMethodInfo method = new GrpcMethodInfo(context.Method, MethodType.DuplexStreaming);
 
-            _metrics.RequestCounterInc(method);
+            MetricsInitializing.Metrics.RequestCounterInc(method);
 
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -154,21 +145,24 @@ namespace PlusUltra.GrpcWebServer.Interpectors.Observability
             {
                 result = continuation(
                     new WrapperStreamReader<TRequest>(requestStream,
-                        () => { _metrics.StreamReceivedCounterInc(method); }),
+                        () => { MetricsInitializing.Metrics.StreamReceivedCounterInc(method); }),
                     new WrapperServerStreamWriter<TResponse>(responseStream,
-                        () => { _metrics.StreamSentCounterInc(method); }), context);
+                        () => { MetricsInitializing.Metrics.StreamSentCounterInc(method); }), context);
 
-                _metrics.ResponseCounterInc(method, StatusCode.OK);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, StatusCode.OK);
+
             }
             catch (RpcException e)
             {
-                _metrics.ResponseCounterInc(method, e.Status.StatusCode);
+                MetricsInitializing.Metrics.ResponseCounterInc(method, e.Status.StatusCode);
+
                 throw;
             }
             finally
             {
                 watch.Stop();
-                _metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
+                if (enableLatencyMetrics)
+                    MetricsInitializing.Metrics.RecordLatency(method, watch.Elapsed.TotalSeconds);
             }
 
             return result;

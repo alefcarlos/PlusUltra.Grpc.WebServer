@@ -1,4 +1,5 @@
 using App.Metrics;
+using App.Metrics.Counter;
 
 namespace PlusUltra.GrpcWebServer
 {

@@ -31,6 +31,7 @@ namespace PlusUltra.GrpcWebServer.Hosting
 
             services.AddGrpc(options =>
             {
+                //Primeiro parametro indica se devemos habilitar métricas de latenia
                 options.Interceptors.Add<ServerMetricsInterceptor>();
             });
             services.AddHealthChecks();
