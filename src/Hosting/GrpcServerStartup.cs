@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PlusUltra.AppMetrics.GrpcServer.Interpectors;
+using PlusUltra.AppMetrics.GrpcServer.StandaloneMetricsServer;
 using PlusUltra.GrpcWebServer.HostedServices;
-using PlusUltra.GrpcWebServer.Interpectors.Observability;
-using PlusUltra.GrpcWebServer.StandaloneMetricsServer;
 
 namespace PlusUltra.GrpcWebServer.Hosting
 {
